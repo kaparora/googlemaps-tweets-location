@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Marker Animations</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+    </style>
+   <!-- jQuery -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js??v=3.exp&signed_in=true"></script>
+<script>
+var geocoder = new google.maps.Geocoder();
+var dc = new google.maps.LatLng(28.9047, -17.0164);
+var locArray = [];
+var image = {
+    url: 'http://community.netapp.com/html/rank_icons/employee-logo.png',
+    // This marker is 20 pixels wide by 32 pixels tall.
+    size: new google.maps.Size(13, 11),
+    // The origin for this image is 0,0.
+    origin: new google.maps.Point(0,0),
+    // The anchor for this image is the base of the flagpole at 0,32.
+    anchor: new google.maps.Point(7, 11)
+  };
+
+function initialize() {
+ var mapOptions = {
+    zoom: 3,
+    center: dc
+    };
+    map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+
+     $.get("http://localhost:9292/locandtweet/netapp", function(data){
+        locArray = data.split(",");
+
+        for ( i = 0; i < locArray.length; i++) {
+            markLocations(i);
+        }
+    });
+
+
+}
+
+function markLoc(locAndTweet) {
+    var locAndTweetArray = locAndTweet.split('::');
+    var addr = locAndTweetArray[0];
+    var tweet = locAndTweetArray[1];
+    geocoder.geocode( { 'address': addr}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+           var marker = new google.maps.Marker({
+                        map: map,
+                        animation: google.maps.Animation.BOUNCE,
+                        position: results[0].geometry.location,
+                        icon: image,
+                        title: tweet
+                    });
+
+          google.maps.event.addListener(marker, 'click', function() {
+                var infowindow = new google.maps.InfoWindow({
+                    content: marker.getTitle()
+                });
+                infowindow.open(map,marker);
+           });
+
+      }
+ });
+}
+
+function markLocations(index) {
+    setTimeout(function() {
+            markLoc(locArray[index]);
+        }, 1000*index);
+}
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+
+</head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
