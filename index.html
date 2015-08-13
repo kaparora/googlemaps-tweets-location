@@ -17,7 +17,7 @@
 <script>
 var geocoder = new google.maps.Geocoder();
 var dc = new google.maps.LatLng(28.9047, -17.0164);
-var locArray = [];
+var locArray;
 var image = {
     url: 'http://community.netapp.com/html/rank_icons/employee-logo.png',
     // This marker is 20 pixels wide by 32 pixels tall.
@@ -37,8 +37,7 @@ function initialize() {
             mapOptions);
 
      $.get("http://localhost:9292/locandtweet/netapp", function(data){
-        locArray = data.split(",");
-
+	    locArray = data.locAndTweets;
         for ( i = 0; i < locArray.length; i++) {
             markLocations(i);
         }
@@ -48,9 +47,9 @@ function initialize() {
 }
 
 function markLoc(locAndTweet) {
-    var locAndTweetArray = locAndTweet.split('::');
-    var addr = locAndTweetArray[0];
-    var tweet = locAndTweetArray[1];
+    var addr = locAndTweet.location;
+    var tweet = locAndTweet.tweet;
+	var user = locAndTweet.user;
     geocoder.geocode( { 'address': addr}, function(results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
            var marker = new google.maps.Marker({
@@ -58,7 +57,7 @@ function markLoc(locAndTweet) {
                         animation: google.maps.Animation.BOUNCE,
                         position: results[0].geometry.location,
                         icon: image,
-                        title: tweet
+                        title: tweet+" by "+user
                     });
 
           google.maps.event.addListener(marker, 'click', function() {
